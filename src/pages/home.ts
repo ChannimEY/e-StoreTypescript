@@ -1,324 +1,332 @@
-import { Header } from '../components/header';
-import { Footer } from '../components/footer';
 import { ApiService } from '../services/fetchApi';
 import { Product } from '../types/product';
 
 export class HomePage {
   private currentSlide = 0;
   private slides = [
+
     {
-      title: "Summer Collection",
-      description: "Discover our latest summer styles with up to 40% off",
-      image: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      buttonText: "Shop Now",
-      buttonLink: "/products"
+      image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070',
+      title: 'Summer Collection 2024',
+      description: 'Discover the latest trends in fashion',
+      buttonText: 'Shop Now',
+      buttonLink: '/products'
     },
     {
-      title: "New Arrivals",
-      description: "Check out our newest products with exclusive deals",
-      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      buttonText: "View New Arrivals",
-      buttonLink: "/products?new=true"
+      image: 'https://www.shutterstock.com/image-vector/electronics-promotional-shopping-sale-computer-260nw-1190458762.jpg',
+      title: 'New Arrivals',
+      description: 'Check out our newest products',
+      buttonText: 'Explore',
+      buttonLink: '/products'
     },
     {
-      title: "Special Offers",
-      description: "Limited time offers on selected items",
-      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      buttonText: "Shop Deals",
-      buttonLink: "/products?sale=true"
+      image: 'https://images.unsplash.com/photo-1607083206968-13611e3d76db?q=80&w=2070',
+      title: 'Special Offers',
+      description: 'Limited time deals and discounts',
+      buttonText: 'View Deals',
+      buttonLink: '/products'
     }
   ];
 
-  private async initSlider() {
-    const sliderContainer = document.getElementById('hero-slider');
-    if (!sliderContainer) return;
-
-    // Auto slide every 5 seconds
-    setInterval(() => {
-      this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-      this.updateSlider();
-    }, 5000);
-
-    // Add click handlers for slider controls
-    const prevButton = document.getElementById('slider-prev');
-    const nextButton = document.getElementById('slider-next');
-
-    prevButton?.addEventListener('click', () => {
-      this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
-      this.updateSlider();
-    });
-
-    nextButton?.addEventListener('click', () => {
-      this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-      this.updateSlider();
-    });
-
-    // Add click handlers for dots
-    const dots = document.querySelectorAll('.slider-dot');
-    dots.forEach((dot, index) => {
-      dot.addEventListener('click', () => {
-        this.currentSlide = index;
-        this.updateSlider();
-      });
-    });
+  // Public method for router: returns HTML string
+  public render(): string {
+    return this.getHtml();
   }
 
-  private updateSlider() {
-    const sliderContainer = document.getElementById('hero-slider');
-    if (!sliderContainer) return;
-
-    const slide = this.slides[this.currentSlide];
-    sliderContainer.style.backgroundImage = `url(${slide.image})`;
-
-    const title = document.getElementById('slider-title');
-    const description = document.getElementById('slider-description');
-    const button = document.getElementById('slider-button');
-
-    if (title) title.textContent = slide.title;
-    if (description) description.textContent = slide.description;
-    if (button) {
-      button.textContent = slide.buttonText;
-      button.setAttribute('href', slide.buttonLink);
-    }
-
-    // Update dots
-    const dots = document.querySelectorAll('.slider-dot');
-    dots.forEach((dot, index) => {
-      dot.classList.toggle('bg-white', index === this.currentSlide);
-      dot.classList.toggle('bg-white/50', index !== this.currentSlide);
-    });
+  // Public method for router: called after HTML is inserted
+  public mount(): void {
+    this.startSlider();
+    this.addEventListeners();
+    this.loadFeaturedProducts();
   }
 
-  private renderProductCard(product: Product): string {
+  // Returns the homepage HTML as a string
+  private getHtml(): string {
     return `
-      <div class="group relative bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-        <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-t-lg bg-gray-200">
-          <img src="${product.image}" alt="${product.title}"
-               class="h-full w-full object-cover object-center group-hover:opacity-75">
+      <!-- Hero Section with Slider -->
+      <section class="relative h-[600px] overflow-hidden">
+        ${this.renderSlider()}
+        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          ${this.slides.map((_, index) => `
+            <button
+              class="w-3 h-3 rounded-full ${index === this.currentSlide ? 'bg-white' : 'bg-white/50'}"
+              data-slide="${index}"
+            ></button>
+          `).join('')}
         </div>
-        <div class="p-4">
-          <h3 class="text-sm text-gray-700 dark:text-gray-300">${product.category}</h3>
-          <p class="mt-1 text-lg font-medium text-gray-900 dark:text-white line-clamp-2">${product.title}</p>
-          <div class="mt-2 flex items-center justify-between">
-            <p class="text-lg font-bold text-primary">$${product.price.toFixed(2)}</p>
-            <div class="flex items-center">
-              <div class="flex items-center">
-                ${this.renderStars(product.rating.rate)}
+      </section>
+
+ 
+
+      <!-- Featured Categories Section -->
+      <section class="py-16 bg-gray-50 dark:bg-gray-900">
+                <div class="container mx-auto px-4">
+          <h2 class="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">Shop by Category</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="relative group overflow-hidden rounded-xl">
+              <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999" alt="Electronics" class="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-110">
+              <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <h3 class="text-2xl font-bold text-white">Electronics</h3>
               </div>
-              <span class="ml-2 text-sm text-gray-500">(${product.rating.count})</span>
             </div>
+            <div class="relative group overflow-hidden rounded-xl">
+              <img src="https://images.unsplash.com/photo-1560343090-f0409e92791a?q=80&w=1964" alt="Clothing" class="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-110">
+              <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <h3 class="text-2xl font-bold text-white">Clothing</h3>
+              </div>
+              </div>
+            <div class="relative group overflow-hidden rounded-xl">
+              <img src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=1974" alt="Accessories" class="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-110">
+              <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <h3 class="text-2xl font-bold text-white">Accessories</h3>
+              </div>
+            </div>
+              </div>
+            </div>
+          </section>
+
+      <!-- Newsletter Section -->
+      <section class="py-16 bg-primary-50 dark:bg-gray-800">
+            <div class="container mx-auto px-4">
+          <div class="max-w-2xl mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-4 text-gray-900 dark:text-white">Subscribe to Our Newsletter</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-8">Stay updated with our latest products and exclusive offers</p>
+            <form class="flex flex-col sm:flex-row gap-4 justify-center">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                class="px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white flex-1 max-w-md"
+              >
+              <button
+                type="submit"
+                class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-300"
+              >
+                Subscribe
+              </button>
+            </form>
+          </div>
+              </div>
+      </section>
+
+      <!-- Customer Says Section -->
+      <section class="py-16 bg-white dark:bg-gray-900">
+        <div class="container mx-auto px-4">
+          <div class="flex items-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mr-4">Customer Says</h2>
+            <hr class="flex-1 border-t border-gray-200 dark:border-gray-700" />
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            ${[
+              {
+                image: 'https://randomuser.me/api/portraits/men/32.jpg',
+                name: 'Denis Zakerburg',
+                title: 'Marketing Management Remmi',
+                text: 'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration .'
+              },
+              {
+                image: 'https://randomuser.me/api/portraits/women/44.jpg',
+                name: 'Lisa Monroe',
+                title: 'Creative Director',
+                text: 'Great service and fast delivery. I will definitely shop here again!'
+              },
+              {
+                image: 'https://randomuser.me/api/portraits/men/65.jpg',
+                name: 'John Smith',
+                title: 'Entrepreneur',
+                text: 'The quality of the products exceeded my expectations. Highly recommended.'
+              }
+            ].map(t => `
+              <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-8 shadow-sm flex flex-col items-start">
+                <img src="${t.image}" alt="${t.name}" class="w-16 h-16 rounded-full mb-4 object-cover" />
+                <div class="mb-2">
+                  <span class="text-xl font-bold text-blue-400">${t.name}</span>
+                  <div class="text-gray-400 text-base">${t.title}</div>
+                </div>
+                <p class="text-gray-800 dark:text-gray-100 mt-4 text-lg">
+                  ${t.text}
+                </p>
+              </div>
+            `).join('')}
           </div>
         </div>
-        <a href="/products/${product.id}" class="absolute inset-0"></a>
+      </section>
+      <!-- Feature Highlights Section -->
+<section class="py-8">
+  <div class="container mx-auto px-4">
+    <div class="bg-gray-50 rounded-2xl flex flex-col md:flex-row items-center justify-between py-8 px-4 md:px-12 gap-8 shadow">
+      <!-- Free Shipping -->
+      <div class="flex items-center gap-4 flex-1 justify-center">
+        <svg class="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 48 48">
+          <rect x="6" y="14" width="36" height="20" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M42 34v-8l-6-6H6" stroke="currentColor" stroke-width="2" fill="none"/>
+          <circle cx="14" cy="36" r="2" fill="currentColor"/>
+          <circle cx="38" cy="36" r="2" fill="currentColor"/>
+        </svg>
+        <div>
+          <div class="font-semibold text-gray-900">Free Shipping</div>
+          <div class="text-gray-400">On All Order</div>
+        </div>
+      </div>
+      <!-- Online Support -->
+      <div class="flex items-center gap-4 flex-1 justify-center">
+        <svg class="w-12 h-12  text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 48 48">
+          <path d="M24 4a20 20 0 1020 20A20 20 0 0024 4zm0 36a16 16 0 1116-16 16 16 0 01-16 16z"/>
+          <path d="M32 32l-8-8V16" stroke="currentColor" stroke-width="2" fill="none"/>
+          <text x="24" y="28" text-anchor="middle" font-size="10" fill="currentColor" font-family="Arial">24/7</text>
+        </svg>
+        <div>
+          <div class="font-semibold text-gray-900">Online Support</div>
+          <div class="text-gray-400">Technical 24/7</div>
+        </div>
+      </div>
+      <!-- Big Saving -->
+      <div class="flex items-center gap-4 flex-1 justify-center">
+        <svg class="w-12 h-12  text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 48 48">
+          <rect x="10" y="10" width="28" height="28" rx="4" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M14 24h20M24 14v20" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <div>
+          <div class="font-semibold text-gray-900">Big Saving</div>
+          <div class="text-gray-400">Weeken Sales</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+    `;
+  }
+
+  private renderSlider(): string {
+    return `
+      <div class="relative h-full">
+        ${this.slides.map((slide, index) => `
+          <div
+            class="absolute inset-0 transition-opacity duration-500 ${index === this.currentSlide ? 'opacity-100' : 'opacity-0'}"
+          >
+            <img
+              src="${slide.image}"
+              alt="${slide.title}"
+              class="w-full h-full object-cover"
+            >
+            <div class="absolute inset-0 bg-black/30 flex items-center">
+              <div class="container mx-auto px-4">
+                <div class="max-w-2xl">
+                  <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">${slide.title}</h1>
+                  <p class="text-xl text-white mb-8">${slide.description}</p>
+                  <a
+                    href="${slide.buttonLink}"
+                    class="inline-block px-8 py-4 bg-white text-gray-900 rounded-lg hover:bg-gray-100 transition-colors duration-300"
+                  >
+                    ${slide.buttonText}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('')}
       </div>
     `;
   }
 
-  private renderStars(rating: number): string {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-
-    return `
-      ${Array(fullStars).fill('<svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>').join('')}
-      ${hasHalfStar ? '<svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' : ''}
-      ${Array(emptyStars).fill('<svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>').join('')}
-    `;
-  }
-
-  async render(): Promise<string> {
+  private async loadFeaturedProducts(): Promise<void> {
     try {
-      // Fetch products for different sections
-      const allProducts = await ApiService.fetchProducts();
-      const newArrivals = allProducts.slice(0, 4);
-      const trendingProducts = allProducts.sort((a, b) => b.rating.rate - a.rating.rate).slice(0, 4);
+      const products = await ApiService.fetchProducts();
+      const featuredProducts = products.slice(0, 4); // Get first 4 products
 
-      return `
-        <main class="min-h-screen">
-          <!-- Hero Slider Section -->
-          <section class="relative h-[600px] overflow-hidden">
-            <div id="hero-slider" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out"
-                 style="background-image: url(${this.slides[0].image})">
-              <div class="absolute inset-0 bg-black/40"></div>
-              <div class="relative h-full flex items-center">
-                <div class="container mx-auto px-4">
-                  <div class="max-w-2xl text-white">
-                    <h1 id="slider-title" class="text-4xl md:text-6xl font-bold mb-4 slide-up">
-                      ${this.slides[0].title}
-                    </h1>
-                    <p id="slider-description" class="text-lg md:text-xl mb-8 slide-up" style="animation-delay: 0.1s">
-                      ${this.slides[0].description}
-                    </p>
-                    <a id="slider-button" href="${this.slides[0].buttonLink}"
-                       class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-primary rounded-lg overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 slide-up"
-                       style="animation-delay: 0.2s">
-                      <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-primary to-primary/80"></span>
-                      <span class="absolute bottom-0 right-0 block w-64 h-64 mb-32 mr-4 transition duration-500 origin-bottom-left transform rotate-45 translate-x-24 bg-white opacity-20 group-hover:rotate-90 ease"></span>
-                      <span class="relative flex items-center">
-                        ${this.slides[0].buttonText}
-                      </span>
-                    </a>
-                  </div>
-                </div>
-              </div>
+      const productsContainer = document.querySelector('.grid');
+      if (productsContainer) {
+        productsContainer.innerHTML = featuredProducts.map(product => `
+          <div class="card p-6 h-full flex flex-col cursor-pointer hover:shadow-lg transition-shadow duration-300 relative group">
+            <div class="aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+              <img
+                src="${product.image}"
+                alt="${product.title}"
+                class="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
             </div>
-
-            <!-- Slider Controls -->
-            <button id="slider-prev" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-all duration-300">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-              </svg>
-            </button>
-            <button id="slider-next" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-all duration-300">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </button>
-
-            <!-- Slider Dots -->
-            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-2">
-              ${this.slides.map((_, index) => `
-                <button class="slider-dot w-3 h-3 rounded-full transition-all duration-300 ${index === 0 ? 'bg-white' : 'bg-white/50'}">
-                </button>
-              `).join('')}
-            </div>
-          </section>
-
-          <!-- New Arrivals Section -->
-          <section class="py-20 bg-white dark:bg-gray-900">
-            <div class="container mx-auto px-4">
-              <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                  New Arrivals
-                </h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                  Check out our latest products that just arrived
-                </p>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                ${newArrivals.map(product => this.renderProductCard(product)).join('')}
-              </div>
-
-              <div class="text-center mt-12">
-                <a href="/products" class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-primary rounded-lg overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5">
-                  <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-primary to-primary/80"></span>
-                  <span class="absolute bottom-0 right-0 block w-64 h-64 mb-32 mr-4 transition duration-500 origin-bottom-left transform rotate-45 translate-x-24 bg-white opacity-20 group-hover:rotate-90 ease"></span>
-                  <span class="relative flex items-center">
-                    View All Products
-                  </span>
-                </a>
-              </div>
-            </div>
-          </section>
-
-          <!-- Trending Products Section -->
-          <section class="py-20 bg-gray-50 dark:bg-gray-800">
-            <div class="container mx-auto px-4">
-              <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                  Trending Products
-                </h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                  Our most popular products based on customer ratings
-                </p>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                ${trendingProducts.map(product => this.renderProductCard(product)).join('')}
-              </div>
-            </div>
-          </section>
-
-          <!-- Features Section -->
-          <section class="py-20 bg-white dark:bg-gray-900">
-            <div class="container mx-auto px-4">
-              <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                  Why Choose e-Store?
-                </h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                  We provide the best shopping experience with quality products, competitive prices, and excellent service.
-                </p>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center card p-8 fade-in hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
-                  <div class="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                  </div>
-                  <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Fast Shipping</h3>
-                  <p class="text-gray-600 dark:text-gray-300">
-                    Get your orders delivered quickly with our reliable shipping partners worldwide.
-                  </p>
-                </div>
-
-                <div class="text-center card p-8 fade-in hover:shadow-lg hover:shadow-primary/10 transition-all duration-300" style="animation-delay: 0.1s">
-                  <div class="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </div>
-                  <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quality Guaranteed</h3>
-                  <p class="text-gray-600 dark:text-gray-300">
-                    All products are carefully selected and tested to ensure the highest quality standards.
-                  </p>
-                </div>
-
-                <div class="text-center card p-8 fade-in hover:shadow-lg hover:shadow-primary/10 transition-all duration-300" style="animation-delay: 0.2s">
-                  <div class="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v4a2 2 0 01-2 2H9a2 2 0 01-2-2v-4m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"></path>
-                    </svg>
-                  </div>
-                  <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Easy Returns</h3>
-                  <p class="text-gray-600 dark:text-gray-300">
-                    Not satisfied? No problem. Easy returns within 30 days for a full refund.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- CTA Section -->
-          <section class="py-20 bg-primary/5 dark:bg-gray-800">
-            <div class="container mx-auto px-4 text-center">
-              <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
-                Ready to Start Shopping?
-              </h2>
-              <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-                Browse our extensive collection of products and find exactly what you're looking for.
-              </p>
-              <a href="/products" class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-primary rounded-lg overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5">
-                <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-primary to-primary/80"></span>
-                <span class="absolute bottom-0 right-0 block w-64 h-64 mb-32 mr-4 transition duration-500 origin-bottom-left transform rotate-45 translate-x-24 bg-white opacity-20 group-hover:rotate-90 ease"></span>
-                <span class="relative flex items-center">
-                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                  </svg>
-                  Browse Products
+            <div class="flex-1 flex flex-col">
+              <h3 class="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 flex-1">
+                ${product.title}
+              </h3>
+              <div class="flex items-center justify-between">
+                <span class="text-2xl font-bold text-red-600 dark:text-primary-400">
+                  $${product.price.toFixed(2)}
                 </span>
-              </a>
+              </div>
             </div>
-          </section>
-        </main>
-      `;
-    } catch (error) {
-      console.error('Error rendering homepage:', error);
-      return `
-        <main class="min-h-screen flex items-center justify-center">
-          <div class="text-center">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Something went wrong</h1>
-            <p class="text-gray-600 dark:text-gray-300">Please try again later</p>
+            <button
+              class="add-to-cart-btn absolute -bottom-[-30px] right-4 w-10 h-10 rounded-full bg-orange-500 shadow-md flex items-center justify-center text-white bg-orange-600 transition-colors duration-300 "
+              data-product-id="${product.id}"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </button>
           </div>
-        </main>
-      `;
+        `).join('');
+      }
+    } catch (error) {
+      console.error('Error loading featured products:', error);
     }
   }
 
-  async init() {
-    await this.initSlider();
+  private startSlider(): void {
+    setInterval(() => {
+      this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+      this.updateSlider();
+    }, 5000); // Change slide every 5 seconds
+  }
+
+  private updateSlider(): void {
+    const slides = document.querySelectorAll('.absolute.inset-0');
+    const dots = document.querySelectorAll('[data-slide]');
+
+    slides.forEach((slide, index) => {
+      if (index === this.currentSlide) {
+        slide.classList.remove('opacity-0');
+        slide.classList.add('opacity-100');
+      } else {
+        slide.classList.remove('opacity-100');
+        slide.classList.add('opacity-0');
+      }
+    });
+
+    dots.forEach((dot, index) => {
+      if (index === this.currentSlide) {
+        dot.classList.remove('bg-white/50');
+        dot.classList.add('bg-white');
+      } else {
+        dot.classList.remove('bg-white');
+        dot.classList.add('bg-white/50');
+      }
+    });
+  }
+
+  private addEventListeners(): void {
+    // Add click handlers for slider dots
+    const dots = document.querySelectorAll('[data-slide]');
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        const slideIndex = parseInt(dot.getAttribute('data-slide') || '0');
+        this.currentSlide = slideIndex;
+        this.updateSlider();
+      });
+    });
+
+    // Add form submission handler for newsletter
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const emailInput = form.querySelector('input[type="email"]') as HTMLInputElement;
+        if (emailInput) {
+          // Handle newsletter subscription
+          console.log('Newsletter subscription:', emailInput.value);
+          emailInput.value = '';
+          alert('Thank you for subscribing!');
+        }
+      });
+    }
   }
 }

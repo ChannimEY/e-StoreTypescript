@@ -47,9 +47,6 @@ export class ProductDetailPage {
   private renderProduct(): string {
     if (!this.product) return '';
 
-    const discount = this.product.discount || 0;
-    const originalPrice = this.product.price / (1 - discount / 100);
-
     return `
       <!-- Breadcrumb -->
       <nav class="mb-8">
@@ -67,11 +64,12 @@ export class ProductDetailPage {
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <!-- Product Image -->
           <div class="space-y-4">
-            <div class="aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <div class="relative h-full">
               <img
                 src="${this.product.image}"
                 alt="${this.product.title}"
-                class="w-full h-full object-contain"
+                class="w-full h-full object-contain rounded-lg bg-white dark:bg-gray-800"
+                style="max-height:400px;"
               />
             </div>
           </div>
@@ -108,14 +106,6 @@ export class ProductDetailPage {
               <span class="text-4xl font-bold text-primary">
                 $${this.product.price.toFixed(2)}
               </span>
-              ${discount > 0 ? `
-                <span class="text-lg text-gray-500 dark:text-gray-400 line-through">
-                  $${originalPrice.toFixed(2)}
-                </span>
-                <span class="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-2 py-1 rounded text-sm font-medium">
-                  Save ${discount}%
-                </span>
-              ` : ''}
             </div>
 
             <!-- Description -->

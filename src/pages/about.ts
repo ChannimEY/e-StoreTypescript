@@ -1,15 +1,4 @@
-import { Header } from '../components/header';
-import { Footer } from '../components/footer';
-
 export class About {
-  private header: Header;
-  private footer: Footer;
-
-  constructor() {
-    this.header = new Header();
-    this.footer = new Footer();
-  }
-
   render(): string {
     return `
       <main class="container mx-auto px-4 py-8">
@@ -105,12 +94,5 @@ export class About {
         </div>
       </main>
     `;
-  }
-
-  mount(container: HTMLElement): void {
-    container.innerHTML = '';
-    container.appendChild(this.header.render());
-    container.appendChild(this.render());
-    container.appendChild(this.footer.render());
   }
 }

@@ -3,8 +3,11 @@ import { Product } from '../types/product';
 export class ProductCard {
   static render(product: Product): string {
     return `
-      <div class="card p-6 h-full flex flex-col">
-        <div class="aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+      <div
+        data-route="/product/${product.id}"
+        class="card p-6 h-full flex flex-col cursor-pointer hover:shadow-lg transition-shadow duration-300 relative group"
+      >
+        <div class="aspect-square mb-4 overflow-hidden rounded-lg bg-white dark:bg-gray-700">
           <img
             src="${product.image}"
             alt="${product.title}"
@@ -34,17 +37,20 @@ export class ProductCard {
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">
+            <span class="text-2xl font-bold text-red-600 dark:text-primary-400">
               $${product.price.toFixed(2)}
             </span>
-            <button
-              data-route="/product/${product.id}"
-              class="btn-primary text-sm py-2 px-4"
-            >
-              View Details
-            </button>
           </div>
         </div>
+
+        <button
+          class="add-to-cart-btn absolute -bottom-[-30px] right-4 w-10 h-10 rounded-full bg-orange-500 shadow-md flex items-center justify-center text-white bg-orange-600 transition-colors duration-300 "
+          data-product-id="${product.id}"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </button>
       </div>
     `;
   }
@@ -58,7 +64,6 @@ export class ProductCard {
         <div class="skeleton h-5 w-3/4 mb-3"></div>
         <div class="flex items-center justify-between">
           <div class="skeleton h-6 w-16"></div>
-          <div class="skeleton h-9 w-24"></div>
         </div>
       </div>
     `;

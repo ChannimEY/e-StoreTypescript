@@ -12,6 +12,11 @@ theme.init();
 const router = new Router();
 router.init();
 
+// Create app structure
+const appContainer = document.createElement('div');
+appContainer.id = 'app';
+document.body.appendChild(appContainer);
+
 // Add header and footer
 document.body.insertAdjacentHTML('afterbegin', Header.render());
 document.body.insertAdjacentHTML('beforeend', Footer.render());

@@ -15,11 +15,11 @@ export class Router {
     this.app = appElement;
   }
 
-  private routes: { [key: string]: () => void } = {
-    '/': () => this.renderPage(() => new HomePage().render()),
-    '/products': () => this.renderPage(() => new ProductsPage().render()),
-    '/about': () => this.renderPage(() => new About().render()),
-    '/contact': () => this.renderPage(() => new Contact().render()),
+  private routes: { [key: string]: () => any } = {
+    '/': () => new HomePage(),
+    '/products': () => new ProductsPage(),
+    '/about': () => new About(),
+    '/contact': () => new Contact(),
   };
 
   init(): void {
@@ -39,30 +39,31 @@ export class Router {
     const productMatch = path.match(/^\/product\/(\d+)$/);
     if (productMatch) {
       const productId = parseInt(productMatch[1], 10);
-      this.renderPage(() => new ProductDetailPage().render(productId));
+      const pageInstance = new ProductDetailPage(productId);
+      this.renderPage(() => pageInstance.render(productId), pageInstance);
       return;
     }
 
     // Handle other routes
-    const route = this.routes[path];
-    if (route) {
-      route();
+    const getPage = this.routes[path];
+    if (getPage) {
+      const pageInstance = getPage();
+      this.renderPage(() => pageInstance.render(), pageInstance);
     } else {
       // Default to home page for unknown routes
-      this.routes['/']();
+      const pageInstance = this.routes['/']();
+      this.renderPage(() => pageInstance.render(), pageInstance);
     }
   }
 
-  private renderPage(pageRenderer: () => string): void {
-    // Add transition class
+  private renderPage(pageRenderer: () => Promise<string> | string, pageInstance?: any): void {
     this.app.classList.add('page-transition');
-
-    // Render the page after a short delay
-    setTimeout(() => {
-      this.app.innerHTML = pageRenderer();
+    setTimeout(async () => {
+      this.app.innerHTML = await pageRenderer();
       window.scrollTo(0, 0);
-
-      // Remove transition class after render
+      if (pageInstance && typeof pageInstance.mount === 'function') {
+        pageInstance.mount();
+      }
       setTimeout(() => {
         this.app.classList.remove('page-transition');
       }, 300);

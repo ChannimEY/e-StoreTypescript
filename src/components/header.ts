@@ -1,6 +1,25 @@
 export class Header {
   static render(): string {
     return `
+      <!-- Top Bar -->
+      <div class="w-full">
+        <div class="w-full bg-gradient-to-r from-blue-800 via-purple-700 to-red-600 py-2 flex items-center justify-between px-4">
+          <span class="text-white text-sm font-medium">30% discount on all products special for June!</span>
+          <div class="flex items-center gap-4">
+            <button class="bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-2 shadow hover:bg-blue-800 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              FREE SHIPPING FOR ALL ORDERS OF $340
+            </button>
+            <div class="flex items-center space-x-2 text-white text-lg">
+              <a href="#" class="hover:text-gray-200"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="hover:text-gray-200"><i class="fab fa-instagram"></i></a>
+              <a href="#" class="hover:text-gray-200"><i class="fab fa-twitter"></i></a>
+              <a href="#" class="hover:text-gray-200"><i class="fab fa-whatsapp"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Navbar -->
       <header class="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
         <nav class="container mx-auto px-4 py-4">
           <div class="flex items-center justify-between">
@@ -74,8 +93,7 @@ export class Header {
           // Navigate after a short delay to allow for transition
           setTimeout(() => {
             window.history.pushState({}, '', targetRoute);
-            const router = new Router();
-            router.handleRouteChange();
+            window.dispatchEvent(new PopStateEvent('popstate'));
 
             // Remove transition class after navigation
             setTimeout(() => {

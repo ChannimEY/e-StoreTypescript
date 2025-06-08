@@ -1,7 +1,5 @@
 import { Product } from '../types/product';
 import { ApiService } from '../services/fetchApi';
-import { Header } from '../components/header';
-import { Footer } from '../components/footer';
 import { ProductCard } from '../components/card';
 import { LoadingSpinner } from '../components/loading';
 import { ErrorMessage } from '../components/errorHandle';
@@ -51,29 +49,21 @@ export class ProductsPage {
     if (!app) return;
 
     app.innerHTML = `
-      ${Header.render()}
-
-      <main class="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div class="container mx-auto px-4 py-8">
-          <div class="mb-8">
+          <div class="mb-8 text-center">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Our Products
+              All Products
             </h1>
-            <p class="text-lg text-gray-600 dark:text-gray-300">
-              Discover our amazing collection of products
-            </p>
           </div>
 
           ${this.loading ? this.renderLoading() : ''}
           ${this.error ? this.renderError() : ''}
           ${!this.loading && !this.error ? this.renderContent() : ''}
         </div>
-      </main>
-
-      ${Footer.render()}
+      </div>
     `;
 
-    Header.addEventListeners();
     this.addEventListeners();
   }
 
@@ -107,9 +97,9 @@ export class ProductsPage {
               <input
                 id="search-input"
                 type="text"
-                placeholder="Search products..."
+                placeholder="Search for products..."
                 value="${this.searchQuery}"
-                class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
 
