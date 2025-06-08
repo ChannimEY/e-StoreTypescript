@@ -1,7 +1,7 @@
 import { Product } from '../types/product';
 
 export class ApiService {
-  private static BASE_URL = 'https://fakestoreapi.in';
+  private static BASE_URL = 'https://fakestoreapi.com';
 
   static async fetchProducts(params: string = ''): Promise<Product[]> {
     try {
@@ -33,7 +33,7 @@ export class ApiService {
 
   static async fetchCategories(): Promise<string[]> {
     try {
-      const response = await fetch(`${this.BASE_URL}/products/category`);
+      const response = await fetch(`${this.BASE_URL}/products/categories`);
       if (!response.ok) {
         throw new Error(`Failed to fetch categories: ${response.statusText}`);
       }
@@ -47,9 +47,9 @@ export class ApiService {
 
   static async fetchProductsByCategory(category: string, sort?: string): Promise<Product[]> {
     try {
-      let url = `${this.BASE_URL}/products/category?type=${encodeURIComponent(category)}`;
+      let url = `${this.BASE_URL}/products/category/${encodeURIComponent(category)}`;
       if (sort) {
-        url += `&sort=${encodeURIComponent(sort)}`;
+        url += `?sort=${encodeURIComponent(sort)}`;
       }
       const response = await fetch(url);
       if (!response.ok) {

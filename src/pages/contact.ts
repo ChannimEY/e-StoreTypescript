@@ -1,3 +1,5 @@
+import { GoToTop } from '../components/goToTop';
+
 export class Contact {
   private handleSubmit(event: Event): void {
     event.preventDefault();
@@ -22,6 +24,17 @@ export class Contact {
   render(): string {
     return `
       <main class="container mx-auto px-4 py-8">
+            <!-- Page Header with Breadcrumb -->
+      <div class="bg-gradient-to-r from-gray-200 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4 mb-8">
+        <div class="container mx-auto flex flex-col justify-center items-center gap-2">
+          <nav class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <a href="/" class="hover:text-primary-500">Home</a>
+            <span class="mx-2">&gt;</span>
+            <span>Products</span>
+          </nav>
+          <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Contact Us</h1>
+        </div>
+      </div>
         <div class="max-w-4xl mx-auto">
           <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-8">Contact Us</h1>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -111,6 +124,11 @@ export class Contact {
           </div>
         </div>
       </main>
+      ${GoToTop.render()}
     `;
+  }
+
+  mount(): void {
+    GoToTop.init();
   }
 }

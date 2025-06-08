@@ -5,29 +5,33 @@ export class ProductCard {
     return `
       <div
         data-route="/product/${product.id}"
-        class="card p-6 h-full flex flex-col cursor-pointer hover:shadow-lg transition-shadow duration-300 relative group"
+        class="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
       >
-        <div class="aspect-square mb-4 overflow-hidden rounded-lg bg-white dark:bg-gray-700">
+        <!-- Product Image Container -->
+        <div class="aspect-square overflow-hidden bg-white dark:bg-gray-700 relative">
           <img
             src="${product.image}"
             alt="${product.title}"
-            class="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+            class="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500"
             loading="lazy"
           />
-        </div>
-
-        <div class="flex-1 flex flex-col">
-          <div class="mb-2">
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 rounded-full">
+          <!-- Category Badge -->
+          <div class="absolute top-4 left-4">
+            <span class="inline-block px-3 py-1.5 text-xs font-medium bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-primary-600 dark:text-primary-400 rounded-full shadow-sm">
               ${product.category}
             </span>
           </div>
+        </div>
 
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 flex-1">
+        <!-- Product Info -->
+        <div class="p-6">
+          <!-- Title -->
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
             ${product.title}
           </h3>
 
-          <div class="flex items-center mb-3">
+          <!-- Rating -->
+          <div class="flex items-center mb-4">
             <div class="flex items-center">
               ${this.renderStars(product.rating.rate)}
               <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
@@ -36,34 +40,39 @@ export class ProductCard {
             </div>
           </div>
 
+          <!-- Price and Add to Cart -->
           <div class="flex items-center justify-between">
-            <span class="text-2xl font-bold text-red-600 dark:text-primary-400">
+            <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">
               $${product.price.toFixed(2)}
             </span>
+            <button
+              class="add-to-cart-btn w-10 h-10 rounded-full bg-orange-500 hover:bg-primary-500 text-white shadow-md flex items-center justify-center transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              data-product-id="${product.id}"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </button>
           </div>
         </div>
 
-        <button
-          class="add-to-cart-btn absolute -bottom-[-30px] right-4 w-10 h-10 rounded-full bg-orange-500 shadow-md flex items-center justify-center text-white bg-orange-600 transition-colors duration-300 "
-          data-product-id="${product.id}"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-        </button>
+        <!-- Hover Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </div>
     `;
   }
 
   static renderSkeleton(): string {
     return `
-      <div class="card p-6">
-        <div class="aspect-square mb-4 skeleton"></div>
-        <div class="skeleton h-4 w-20 mb-2"></div>
-        <div class="skeleton h-5 w-full mb-2"></div>
-        <div class="skeleton h-5 w-3/4 mb-3"></div>
-        <div class="flex items-center justify-between">
-          <div class="skeleton h-6 w-16"></div>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+        <div class="aspect-square bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+        <div class="p-6 space-y-4">
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse"></div>
+          <div class="flex items-center justify-between">
+            <div class="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div class="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+          </div>
         </div>
       </div>
     `;

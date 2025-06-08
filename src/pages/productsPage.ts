@@ -3,6 +3,7 @@ import { ApiService } from '../services/fetchApi';
 import { ProductCard } from '../components/card';
 import { LoadingSpinner } from '../components/loading';
 import { ErrorMessage } from '../components/errorHandle';
+import { GoToTop } from '../components/goToTop';
 
 export class ProductsPage {
   private products: Product[] = [];
@@ -13,6 +14,7 @@ export class ProductsPage {
   private searchQuery = '';
   private loading = true;
   private error: string | null = null;
+  private currentPrice = 1000;
 
   constructor() {
     this.init();
@@ -21,7 +23,6 @@ export class ProductsPage {
   private async init(): Promise<void> {
     await this.loadData();
     this.render();
-    this.addEventListeners();
   }
 
   private async loadData(): Promise<void> {
@@ -49,28 +50,93 @@ export class ProductsPage {
     if (!app) return;
 
     app.innerHTML = `
-      <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div class="container mx-auto px-4 py-8">
-          <div class="mb-8 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              All Products
-            </h1>
-          </div>
-
-          ${this.loading ? this.renderLoading() : ''}
-          ${this.error ? this.renderError() : ''}
-          ${!this.loading && !this.error ? this.renderContent() : ''}
+      <!-- Page Header with Breadcrumb -->
+      <div class="bg-gradient-to-r from-gray-200 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4 mb-8">
+        <div class="container mx-auto flex flex-col justify-center items-center gap-2">
+          <nav class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <a href="/" class="hover:text-primary-500">Home</a>
+            <span class="mx-2">&gt;</span>
+            <span>Products</span>
+          </nav>
+          <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Products</h1>
         </div>
       </div>
+      <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-4 py-12">
+          <div class="flex flex-col md:flex-row gap-12">
+            <!-- Sidebar -->
+            <aside class="w-full md:w-1/4 mb-8 md:mb-0">
+              <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
+                <div class="mb-6">
+                  <div class="relative">
+                    <input id="search-input" type="text" placeholder="Search Here" value="${this.searchQuery}" class="w-full pl-12 pr-4 py-3 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                    <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="mb-8">
+                  <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-4">Product Categories</h3>
+                  <ul class="space-y-2" id="category-list">
+                    <li>
+                      <a href="#" data-category="all" class="${this.currentCategory === 'all' ? 'font-bold text-primary-500' : 'text-gray-700 dark:text-gray-300'} hover:text-primary-500 dark:hover:text-primary-400 transition-colors">All</a>
+                    </li>
+                    ${this.categories.map(category => `
+                      <li>
+                        <a href="#" data-category="${category}" class="${this.currentCategory === category ? 'font-bold text-primary-500' : 'text-gray-700 dark:text-gray-300'} hover:text-primary-500 dark:hover:text-primary-400 transition-colors">${category.charAt(0).toUpperCase() + category.slice(1)}</a>
+                      </li>
+                    `).join('')}
+                  </ul>
+                </div>
+                <div class="mb-8">
+                  <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-4">Choose Price</h3>
+                  <div class="flex items-center gap-4">
+                    <span class="text-gray-700 dark:text-gray-300" id="min-price">$1</span>
+                    <input id="price-range" type="range" min="1" max="1000" value="${this.currentPrice}" class="flex-1 accent-primary-500" />
+                    <span class="text-gray-700 dark:text-gray-300" id="current-price">$${this.currentPrice}</span>
+                  </div>
+                </div>
+                <button id="filter-btn" class="w-full py-3 mt-4 bg-black text-white rounded-full font-semibold hover:bg-primary-600 transition">Filter</button>
+              </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+                <div>
+                  <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Shop</h1>
+                  <div class="text-gray-600 dark:text-gray-300">Showing 1-${this.filteredProducts.length} of ${this.products.length} results</div>
+                </div>
+                <div>
+                  <select id="sort-filter" class="px-6 py-3 rounded-full bg-black text-white font-semibold focus:ring-2 focus:ring-primary-500">
+                    <option value="popularity" ${this.currentSort === 'popularity' ? 'selected' : ''}>Sort by popularity</option>
+                    <option value="price-low" ${this.currentSort === 'price-low' ? 'selected' : ''}>Sort by price: low to high</option>
+                    <option value="price-high" ${this.currentSort === 'price-high' ? 'selected' : ''}>Sort by price: high to low</option>
+                    <option value="rating" ${this.currentSort === 'rating' ? 'selected' : ''}>Sort by rating</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                ${this.filteredProducts.length > 0
+                  ? this.filteredProducts.map(product => ProductCard.render(product)).join('')
+                  : this.renderNoResults()
+                }
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+      ${GoToTop.render()}
     `;
 
     this.addEventListeners();
+    GoToTop.init();
   }
 
   private renderLoading(): string {
     return `
-      <div class="mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="mb-8 animate-pulse">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           ${Array(8).fill(0).map(() => ProductCard.renderSkeleton()).join('')}
         </div>
       </div>
@@ -83,119 +149,72 @@ export class ProductsPage {
     });
   }
 
-  private renderContent(): string {
-    return `
-      <!-- Filters and Search -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
-        <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
-          <div class="flex flex-col sm:flex-row gap-4 flex-1">
-            <!-- Search -->
-            <div class="relative flex-1 max-w-md">
-              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-              <input
-                id="search-input"
-                type="text"
-                placeholder="Search for products..."
-                value="${this.searchQuery}"
-                class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-            </div>
-
-            <!-- Category Filter -->
-            <select
-              id="category-filter"
-              class="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="all">All Categories</option>
-              ${this.categories.map(category => `
-                <option value="${category}" ${this.currentCategory === category ? 'selected' : ''}>
-                  ${category.charAt(0).toUpperCase() + category.slice(1)}
-                </option>
-              `).join('')}
-            </select>
-          </div>
-
-          <div class="flex items-center gap-4">
-            <!-- Sort -->
-            <select
-              id="sort-filter"
-              class="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="default">Default</option>
-              <option value="price-low" ${this.currentSort === 'price-low' ? 'selected' : ''}>Price: Low to High</option>
-              <option value="price-high" ${this.currentSort === 'price-high' ? 'selected' : ''}>Price: High to Low</option>
-              <option value="rating" ${this.currentSort === 'rating' ? 'selected' : ''}>Highest Rated</option>
-              <option value="name" ${this.currentSort === 'name' ? 'selected' : ''}>Name A-Z</option>
-            </select>
-
-            <!-- Results Count -->
-            <span class="text-gray-600 dark:text-gray-300 whitespace-nowrap">
-              ${this.filteredProducts.length} products
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Products Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        ${this.filteredProducts.length > 0
-          ? this.filteredProducts.map(product => ProductCard.render(product)).join('')
-          : this.renderNoResults()
-        }
-      </div>
-    `;
-  }
-
   private renderNoResults(): string {
     return `
-      <div class="col-span-full text-center py-12">
-        <div class="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="col-span-full text-center py-16">
+        <div class="w-32 h-32 bg-gradient-to-br from-primary-100 to-primary-50 dark:from-primary-900/30 dark:to-primary-800/30 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-16 h-16 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
         </div>
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No products found</h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-4">Try adjusting your search or filter criteria</p>
-        <button id="clear-filters" class="btn-primary">Clear Filters</button>
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">No products found</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
+          We couldn't find any products matching your criteria. Try adjusting your search or filter settings.
+        </p>
+        <button
+          id="clear-filters"
+          class="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-400 text-white rounded-xl hover:from-primary-600 hover:to-primary-500 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        >
+          Clear Filters
+        </button>
       </div>
     `;
   }
 
   private addEventListeners(): void {
-    // Search input
+    // Search
     const searchInput = document.getElementById('search-input') as HTMLInputElement;
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
-        this.searchQuery = (e.target as HTMLInputElement).value;
+        this.searchQuery = searchInput.value;
         this.applyFilters();
       });
     }
-
-    // Category filter
-    const categoryFilter = document.getElementById('category-filter') as HTMLSelectElement;
-    if (categoryFilter) {
-      categoryFilter.addEventListener('change', (e) => {
-        this.currentCategory = (e.target as HTMLSelectElement).value;
+    // Category
+    const categoryList = document.getElementById('category-list');
+    if (categoryList) {
+      categoryList.querySelectorAll('a[data-category]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const category = (e.target as HTMLElement).getAttribute('data-category') || 'all';
+          this.currentCategory = category;
+          this.applyFilters();
+        });
+      });
+    }
+    // Price
+    const priceRange = document.getElementById('price-range') as HTMLInputElement;
+    const currentPriceLabel = document.getElementById('current-price');
+    if (priceRange && currentPriceLabel) {
+      priceRange.addEventListener('input', () => {
+        this.currentPrice = parseInt(priceRange.value, 10);
+        currentPriceLabel.textContent = `$${this.currentPrice}`;
         this.applyFilters();
       });
     }
-
-    // Sort filter
+    // Sort
     const sortFilter = document.getElementById('sort-filter') as HTMLSelectElement;
     if (sortFilter) {
-      sortFilter.addEventListener('change', (e) => {
-        this.currentSort = (e.target as HTMLSelectElement).value;
+      sortFilter.addEventListener('change', () => {
+        this.currentSort = sortFilter.value;
         this.applyFilters();
       });
     }
-
-    // Clear filters
-    const clearFilters = document.getElementById('clear-filters');
-    if (clearFilters) {
-      clearFilters.addEventListener('click', () => {
-        this.clearFilters();
+    // Filter button (optional, can be used to trigger applyFilters)
+    const filterBtn = document.getElementById('filter-btn');
+    if (filterBtn) {
+      filterBtn.addEventListener('click', () => {
+        this.applyFilters();
       });
     }
 
@@ -209,8 +228,7 @@ export class ProductsPage {
 
   private applyFilters(): void {
     let filtered = [...this.products];
-
-    // Apply search filter
+    // Search
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase();
       filtered = filtered.filter(product =>
@@ -219,13 +237,15 @@ export class ProductsPage {
         product.category.toLowerCase().includes(query)
       );
     }
-
-    // Apply category filter
-    if (this.currentCategory !== 'all') {
+    // Category
+    if (this.currentCategory && this.currentCategory !== 'all') {
       filtered = filtered.filter(product => product.category === this.currentCategory);
     }
-
-    // Apply sorting
+    // Price
+    if (this.currentPrice) {
+      filtered = filtered.filter(product => product.price <= this.currentPrice);
+    }
+    // Sort
     switch (this.currentSort) {
       case 'price-low':
         filtered.sort((a, b) => a.price - b.price);
@@ -236,38 +256,13 @@ export class ProductsPage {
       case 'rating':
         filtered.sort((a, b) => b.rating.rate - a.rating.rate);
         break;
-      case 'name':
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
+      // Popularity can be by rating count or default order
+      case 'popularity':
+      default:
+        filtered.sort((a, b) => b.rating.count - a.rating.count);
         break;
     }
-
     this.filteredProducts = filtered;
-    this.updateProductsGrid();
-  }
-
-  private updateProductsGrid(): void {
-    const grid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-4');
-    if (grid) {
-      grid.innerHTML = this.filteredProducts.length > 0
-        ? this.filteredProducts.map(product => ProductCard.render(product)).join('')
-        : this.renderNoResults();
-
-      // Re-add event listeners for new content
-      this.addEventListeners();
-    }
-
-    // Update results count
-    const resultsCount = document.querySelector('.text-gray-600.dark\\:text-gray-300.whitespace-nowrap');
-    if (resultsCount) {
-      resultsCount.textContent = `${this.filteredProducts.length} products`;
-    }
-  }
-
-  private clearFilters(): void {
-    this.searchQuery = '';
-    this.currentCategory = 'all';
-    this.currentSort = 'default';
-    this.filteredProducts = [...this.products];
     this.render();
   }
 

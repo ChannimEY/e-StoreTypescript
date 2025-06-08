@@ -6,14 +6,13 @@ export class Footer {
           <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div class="flex items-center space-x-2 mb-4">
-                <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <div class="w-8 h-8  rounded-lg flex items-center justify-center">
                   <img src="/src/assets/taplogo.png" alt="logo" class="w-full h-full object-cover">
                 </div>
                 <h3 class="text-xl font-bold">e-Store</h3>
               </div>
               <p class="text-gray-400 mb-4 max-w-md">
-                Your ultimate shopping destination for the latest trends and best deals.
-                Discover amazing products with fast shipping and excellent customer service.
+                Your one-stop shop for the hottest styles and unbeatable prices. Explore top-rated products, enjoy quick delivery, and experience outstanding customer support every step of the way.
               </p>
               <div class="flex space-x-4">
                 <a href="#" class="text-gray-400 hover:text-white transition-colors">
